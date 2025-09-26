@@ -44,6 +44,7 @@ export async function generatePixelArt(
 
   // BANチェック
   const banList = await fetchBanList();
+  console.log('BANリストの中身:', banList); 
   if (banList.includes(userEmail.toLowerCase())) {
     throw new Error('このメールアドレスは利用できません（BANリスト一致）');
   }
@@ -135,6 +136,7 @@ export async function generatePixelArt(
     }
   });
 }
+
 
 
 
