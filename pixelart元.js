@@ -42,13 +42,6 @@ export async function generatePixelArt(
     throw new Error('Googleログインしてメールアドレスを取得してください');
   }
 
-  // BANチェック
-  const banList = await fetchBanList();
-  console.log('BANリストの中身:', banList); 
-  if (banList.includes(userEmail.toLowerCase())) {
-    throw new Error('このメールアドレスは利用できません（BANリスト一致）');
-  }
-
   let baseW = Math.min(baseImg.width, 500);
   let baseH = Math.min(baseImg.height, 500);
 
@@ -136,6 +129,7 @@ export async function generatePixelArt(
     }
   });
 }
+
 
 
 
