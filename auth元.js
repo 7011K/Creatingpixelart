@@ -24,10 +24,11 @@ function initLogin(onLoginOK) {
       const payload = JSON.parse(atob(token.split('.')[1]));
       userEmail = payload.email ? payload.email.toLowerCase() : '';
       if (typeof onLoginOK === "function") onLoginOK(userEmail);
-    }
+    },auto_select: false  // ← ここを追加
   });
   google.accounts.id.renderButton(
     document.getElementById("googleSignInBtn"),
     { theme: "outline", size: "large" }
   );
 }
+
