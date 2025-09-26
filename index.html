@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ピクセルアート作成ツール（Google認証＋BAN判定）</title>
+  <title>ピクセルアート作成ツール</title>
   <style>
     body { font-family: sans-serif; margin: 2em; }
     .container { max-width: 700px; margin: auto; }
@@ -108,8 +108,9 @@ function showFileName(inputId, labelId) {
 
 function showInformation() {
   alert(
-    `本アプリは
-選択した元画像の色を解析し素材画像を変更して並べることでピクセルアートを作成するものです
+    `📌 ピクセルアート作成ツールについて
+    
+本アプリは選択した元画像の色を解析し素材画像を変更して並べることでピクセルアートを作成するものです
 
 ・元画像は最大500×500、素材画像は最大50×50ピクセルまでです
 ・GitHub Pagesで公開しても、選択した画像はPCから読み込まれ、外部送信されません
@@ -123,7 +124,8 @@ function showInformation() {
 
 function showTerms() {
   alert(
-    `利用規約です
+    `📜利用規約
+    
 これらが守られていない場合製作者による利用停止措置を行いますのでご注意下さい
 
 ・コードの解析やアプリを使った有料コンテンツの作成は禁止です
@@ -222,4 +224,5 @@ document.getElementById('generateBtn').onclick = async function() {
 </script>
 </body>
 </html>
+
 
