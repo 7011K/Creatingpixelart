@@ -126,14 +126,13 @@ function showTerms() {
     `利用規約です
 これらが守られていない場合製作者による利用停止措置を行いますのでご注意下さい
 
-（
 ・コードの解析やアプリを使った有料コンテンツの作成は禁止です
 ・本アプリを使用して生成した画像の著作権は使用した画像の製作者に依存します
 ・生成された画像の販売は禁止です
 ・生成された画像はSNSでの公開、アイコンでの使用のみ許可します　
 　※画像公開の際は本アプリのURLを乗せてください
 ・生成された画像に関してのトラブルには一切かかわりませんのでご注意ください
-）`
+`
   );
 }
 
@@ -157,14 +156,14 @@ function loadImage(file) {
 
 function showPreview(canvas) {
   const preview = document.getElementById('previewImage');
-  const maxW = 400, maxH = 400;
+  const maxW = 800, maxH = 800;
   let scale = Math.min(maxW/canvas.width, maxH/canvas.height, 1);
   let previewW = Math.floor(canvas.width * scale), previewH = Math.floor(canvas.height * scale);
   const thumbCanvas = document.createElement('canvas');
   thumbCanvas.width = previewW;
   thumbCanvas.height = previewH;
   const ctx = thumbCanvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'low';
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(canvas, 0, 0, previewW, previewH);
   preview.src = thumbCanvas.toDataURL('image/png');
   preview.style.display = '';
@@ -223,3 +222,4 @@ document.getElementById('generateBtn').onclick = async function() {
 </script>
 </body>
 </html>
+
