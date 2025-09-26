@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ピクセルアート作成ツール（プレビュー付き）</title>
+  <title>ピクセルアート作成ツール（Google認証＋BAN判定）</title>
   <style>
     body { font-family: sans-serif; margin: 2em; }
     .container { max-width: 700px; margin: auto; }
@@ -11,12 +11,22 @@
     .file-list { font-size: 0.9em; color: #555; margin-bottom: 1em; }
     .preview-area { margin-top: 1em; }
     #previewImage { border:1px solid #ccc; max-width:400px; max-height:400px; display:block; }
+    .button-row { margin-bottom: 1em; }
+    .locked { pointer-events: none; opacity: 0.5; }
+    #loginStatus { color: #d32f2f; margin-bottom: 1em; }
   </style>
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-<div class="container">
+<div id="loginStatus">Googleログインしてください</div>
+<div id="googleSignInBtn"></div>
+<div class="container locked" id="mainContainer">
   <h1>ピクセルアート作成ツール</h1>
-  <button onclick="showInformation()">説明を表示</button><br>
+  <div class="button-row">
+    <button id="infoBtn">説明を表示</button>
+    <button id="termsBtn">利用規約</button>
+  </div>
 
   <label>ブレンド率 (0.0～1.0):</label><br>
   <input id="blendRatio" type="range" min="0" max="1" step="0.01" value="0.5" style="width:300px;">
@@ -28,49 +38,56 @@
     背景（RGBA=(0, 0, 0, 0)）をミックス対象にする
   </label><br>
   <label>
-    <input id="useFolder" type="checkbox" onchange="toggleMaterialInput()">
+    <input id="useFolder" type="checkbox">
     素材画像をフォルダ内画像全て対象にする
   </label><br><br>
 
   <label>元画像を選択（最大500×500）: 
-    <input id="baseImage" type="file" accept="image/*" onchange="showFileName('baseImage', 'baseFileName')">
+    <input id="baseImage" type="file" accept="image/*">
   </label>
   <div class="file-list" id="baseFileName"></div>
   <div id="materialInput">
     <label>素材画像を選択（最大50×50）: 
-      <input id="materialImage" type="file" accept="image/*" onchange="showFileName('materialImage', 'materialFileName')">
+      <input id="materialImage" type="file" accept="image/*">
     </label>
     <div class="file-list" id="materialFileName"></div>
   </div>
   <div id="materialFolderInput" style="display:none;">
     <label>素材画像フォルダを選択: 
-      <input id="materialFolder" type="file" accept="image/*" multiple onchange="showFileName('materialFolder', 'materialFolderFileNames')">
+      <input id="materialFolder" type="file" accept="image/*" multiple>
     </label>
     <div class="file-list" id="materialFolderFileNames"></div>
   </div>
   <br>
 
-  <button onclick="generatePixelArt()">ピクセルアートを生成</button><br>
+  <button id="generateBtn">ピクセルアートを生成</button><br>
   <div class="progress" id="progressBar" style="display:none;"><div class="bar" id="progressBarBar"></div></div>
   <a id="downloadLink" style="display:none;" download="output_image.png">画像をダウンロード</a>
   <br>
-  <canvas id="outputCanvas" style="display:none;"></canvas>
   <div class="preview-area">
     <h3>プレビュー</h3>
     <img id="previewImage" alt="プレビュー画像" style="display:none;">
   </div>
 </div>
 
-<script>
+<script type="module">
+import { setupGoogleLogin, userEmail } from './auth.js';
+import { blendColors, getImageDataFromImg, generatePixelArt } from './pixelart.js';
+
+// UIイベント
 document.getElementById('blendRatio').addEventListener('input', function() {
   document.getElementById('blendRatioVal').textContent = this.value;
 });
-
-function toggleMaterialInput() {
+document.getElementById('useFolder').addEventListener('change', function() {
   const useFolder = document.getElementById('useFolder').checked;
   document.getElementById('materialInput').style.display = useFolder ? 'none' : '';
   document.getElementById('materialFolderInput').style.display = useFolder ? '' : 'none';
-}
+});
+document.getElementById('baseImage').addEventListener('change', () => showFileName('baseImage', 'baseFileName'));
+document.getElementById('materialImage').addEventListener('change', () => showFileName('materialImage', 'materialFileName'));
+document.getElementById('materialFolder').addEventListener('change', () => showFileName('materialFolder', 'materialFolderFileNames'));
+document.getElementById('infoBtn').onclick = showInformation;
+document.getElementById('termsBtn').onclick = showTerms;
 
 function showFileName(inputId, labelId) {
   const input = document.getElementById(inputId);
@@ -91,7 +108,7 @@ function showFileName(inputId, labelId) {
 
 function showInformation() {
   alert(
-    `本ソフトは
+    `本アプリは
 選択した元画像の色を解析し素材画像を変更して並べることでピクセルアートを作成するものです
 
 ・元画像は最大500×500、素材画像は最大50×50ピクセルまでです
@@ -104,15 +121,30 @@ function showInformation() {
   );
 }
 
-function blendColors(base, material, blendRatio, mixBackground) {
-  if (!mixBackground && material[3] === 0) return material;
-  return [
-    Math.round(base[0] * blendRatio + material[0] * (1 - blendRatio)),
-    Math.round(base[1] * blendRatio + material[1] * (1 - blendRatio)),
-    Math.round(base[2] * blendRatio + material[2] * (1 - blendRatio)),
-    Math.round(base[3] * blendRatio + material[3] * (1 - blendRatio))
-  ];
+function showTerms() {
+  alert(
+    `利用規約です
+これらが守られていない場合製作者による利用停止措置を行いますのでご注意下さい
+
+（
+・コードの解析やアプリを使った有料コンテンツの作成は禁止です
+・本アプリを使用して生成した画像の著作権は使用した画像の製作者に依存します
+・生成された画像の販売は禁止です
+・生成された画像はSNSでの公開、アイコンでの使用のみ許可します　
+　※画像公開の際は本アプリのURLを乗せてください
+・生成された画像に関してのトラブルには一切かかわりませんのでご注意ください
+）`
+  );
 }
+
+// Google認証（BAN判定はpixelart.jsで）
+setupGoogleLogin(
+  (email) => {
+    document.getElementById("loginStatus").textContent = "ログイン済み: " + email;
+    document.getElementById("mainContainer").classList.remove("locked");
+    document.getElementById("googleSignInBtn").style.display = "none";
+  }
+);
 
 function loadImage(file) {
   return new Promise((resolve, reject) => {
@@ -123,39 +155,22 @@ function loadImage(file) {
   });
 }
 
-function getImageDataFromImg(img, w, h) {
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, w, h);
-  return ctx.getImageData(0, 0, w, h);
-}
-
-// ここがプレビュー用（縮小）canvasの生成
 function showPreview(canvas) {
   const preview = document.getElementById('previewImage');
-  // プレビュー最大サイズ
-  const maxW = 400;
-  const maxH = 400;
-  let w = canvas.width, h = canvas.height;
-  let scale = Math.min(maxW/w, maxH/h, 1);
-  let previewW = Math.floor(w * scale), previewH = Math.floor(h * scale);
-
-  // 縮小用canvas
+  const maxW = 400, maxH = 400;
+  let scale = Math.min(maxW/canvas.width, maxH/canvas.height, 1);
+  let previewW = Math.floor(canvas.width * scale), previewH = Math.floor(canvas.height * scale);
   const thumbCanvas = document.createElement('canvas');
   thumbCanvas.width = previewW;
   thumbCanvas.height = previewH;
   const ctx = thumbCanvas.getContext('2d');
-  // 画質よりも速度優先
   ctx.imageSmoothingQuality = 'low';
   ctx.drawImage(canvas, 0, 0, previewW, previewH);
-
   preview.src = thumbCanvas.toDataURL('image/png');
   preview.style.display = '';
 }
 
-async function generatePixelArt() {
+document.getElementById('generateBtn').onclick = async function() {
   const blendRatio = parseFloat(document.getElementById('blendRatio').value);
   const mixBackground = document.getElementById('mixBackground').checked;
   const useFolder = document.getElementById('useFolder').checked;
@@ -180,106 +195,31 @@ async function generatePixelArt() {
     return alert('画像の読み込みに失敗しました');
   }
 
-  // 最大サイズ制限
-  let baseW = Math.min(baseImg.width, 500);
-  let baseH = Math.min(baseImg.height, 500);
-
-  const baseCanvas = document.createElement('canvas');
-  baseCanvas.width = baseW;
-  baseCanvas.height = baseH;
-  const baseCtx = baseCanvas.getContext('2d');
-  baseCtx.drawImage(baseImg, 0, 0, baseW, baseH);
-  const baseData = baseCtx.getImageData(0, 0, baseW, baseH).data;
-
-  // 素材画像サイズを基準に統一
-  let materialW = Math.min(materialImgs[0].width, 50);
-  let materialH = Math.min(materialImgs[0].height, 50);
-  // 事前に素材画像のImageDataを作成
-  const materialImageDataArray = [];
-  for (let i = 0; i < materialImgs.length; i++) {
-    materialImageDataArray.push(getImageDataFromImg(materialImgs[i], materialW, materialH));
-  }
-
-  // 出力画像サイズ上限: 15,000x15,000px
-  const outputW = baseW * materialW;
-  const outputH = baseH * materialH;
-  if (outputW > 15000 || outputH > 15000) {
-    alert(`出力画像サイズが大きすぎます（${outputW}×${outputH}）。\n最大15,000×15,000まで対応します。画像サイズを小さくしてください。`);
-    return;
-  }
-
-  const outputCanvas = document.getElementById('outputCanvas');
-  outputCanvas.width = outputW;
-  outputCanvas.height = outputH;
-  const outputCtx = outputCanvas.getContext('2d');
-  let outputImageData = outputCtx.createImageData(outputW, outputH);
-
-  // 進捗表示
   const progressBar = document.getElementById('progressBar');
   const progressBarBar = document.getElementById('progressBarBar');
   progressBar.style.display = '';
   progressBarBar.style.width = '0%';
 
-  let materialIndex = 0;
-
-  // メインループ（高速化済み）
-  let processedPixels = 0;
-  function processChunk(startY, chunkSize) {
-    for (let y = startY; y < Math.min(baseH, startY + chunkSize); y++) {
-      for (let x = 0; x < baseW; x++) {
-        const idx = (y * baseW + x) * 4;
-        const baseRGBA = [
-          baseData[idx], baseData[idx+1], baseData[idx+2], baseData[idx+3]
-        ];
-        if (baseRGBA[3] === 0) continue;
-
-        // 素材画像を順番に使用
-        const matImageData = materialImageDataArray[materialIndex];
-        const matData = matImageData.data;
-        for (let j = 0; j < materialH; j++) {
-          for (let i = 0; i < materialW; i++) {
-            const matIdx = (j * materialW + i) * 4;
-            const matRGBA = [
-              matData[matIdx],
-              matData[matIdx+1],
-              matData[matIdx+2],
-              matData[matIdx+3]
-            ];
-            if (!mixBackground && matRGBA[3] === 0) continue;
-
-            const blended = blendColors(baseRGBA, matRGBA, blendRatio, mixBackground);
-            const targetX = x * materialW + i;
-            const targetY = y * materialH + j;
-            const outIdx = (targetY * outputW + targetX) * 4;
-            outputImageData.data[outIdx] = blended[0];
-            outputImageData.data[outIdx+1] = blended[1];
-            outputImageData.data[outIdx+2] = blended[2];
-            outputImageData.data[outIdx+3] = blended[3];
-          }
-        }
-        materialIndex = (materialIndex + 1) % materialImageDataArray.length;
-      }
-      processedPixels++;
-      if (y % 10 === 0) {
-        progressBarBar.style.width = Math.round((processedPixels/baseH)*100) + '%';
-      }
-    }
-    if (startY + chunkSize < baseH) {
-      setTimeout(() => processChunk(startY + chunkSize, chunkSize), 0);
-    } else {
-      outputCtx.putImageData(outputImageData, 0, 0);
-      outputCanvas.style.display = 'none'; // 直接表示せず
-      const url = outputCanvas.toDataURL('image/png');
-      const link = document.getElementById('downloadLink');
-      link.href = url;
-      link.style.display = '';
-      progressBar.style.display = 'none';
-      alert('ピクセルアート画像が生成されました！画像をダウンロードできます。');
-      showPreview(outputCanvas); // ここでプレビュー表示
-    }
+  try {
+    const outputCanvas = await generatePixelArt(
+      baseImg, materialImgs, blendRatio, mixBackground,
+      (percent) => { progressBarBar.style.width = percent + '%'; },
+      userEmail
+    );
+    progressBar.style.display = 'none';
+    const url = outputCanvas.toDataURL('image/png');
+    const link = document.getElementById('downloadLink');
+    link.href = url;
+    link.style.display = '';
+    showPreview(outputCanvas);
+    alert('ピクセルアート画像が生成されました！画像をダウンロードできます。');
+  } catch (e) {
+    progressBar.style.display = 'none';
+    alert(e.message || '生成中にエラーが発生しました');
+    // BANの場合、"このメールアドレスは利用できません（BANリスト一致）"
+    // 未ログインの場合、"Googleログインしてメールアドレスを取得してください"
   }
-  processChunk(0, 10);
-}
+};
 </script>
 </body>
 </html>
