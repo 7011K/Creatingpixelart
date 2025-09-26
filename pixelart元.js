@@ -1,11 +1,12 @@
 // pixelart.js
 
+/*
 async function fetchBanList() {
   try {
     const res = await fetch('https://raw.githubusercontent.com/7011K/Creatingpixelart/main/BANList.text?version=' + Date.now(), {
   cache: 'no-store'
 });
-
+/*
 
     if (!res.ok) return [];
     const text = await res.text();
@@ -129,6 +130,7 @@ export async function generatePixelArt(
     }
   });
 }
+
 
 
 
