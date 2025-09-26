@@ -1,6 +1,6 @@
 // pixelart.js
 
-/*
+*/
 async function fetchBanList() {
   try {
     const res = await fetch('https://raw.githubusercontent.com/7011K/Creatingpixelart/main/BANList.text?version=' + Date.now(), {
@@ -130,6 +130,7 @@ export async function generatePixelArt(
     }
   });
 }
+
 
 
 
