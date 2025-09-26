@@ -2,7 +2,10 @@
 
 async function fetchBanList() {
   try {
-    const res = await fetch('https://raw.githubusercontent.com/7011K/Creatingpixelart/main/BANList.text');
+    const res = await fetch('https://raw.githubusercontent.com/7011K/Creatingpixelart/main/BANList.text', {
+  cache: 'no-store'
+});
+
     if (!res.ok) return [];
     const text = await res.text();
     return text.split('\n').map(x => x.trim().toLowerCase()).filter(x => x);
@@ -132,6 +135,7 @@ export async function generatePixelArt(
     }
   });
 }
+
 
 
 
