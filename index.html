@@ -152,16 +152,24 @@
     };
 
     // Google認証（BAN判定含む）
-    document.getElementById("customLoginBtn").onclick = () => {
-      setupGoogleLogin((email) => {
-        document.getElementById("loginStatus").textContent = "ログイン済み: " + email;
-        document.getElementById("mainContainer").classList.remove("locked");
-        document.get
+   document.getElementById("customLoginBtn").onclick = () => {
+  setupGoogleLogin((email) => {
+    if (email) {
+      // ログイン成功時の処理
+      document.getElementById("loginStatus").textContent = "ログイン済み: " + email;
+      document.getElementById("mainContainer").classList.remove("locked");
+      document.getElementById("customLoginBtn").style.display = "none";
+      document.getElementById("loginNotice").style.display = "none";
+    } else {
+      // ログイン失敗（BANされている）時の処理
+      document.getElementById("loginStatus").textContent = "ログインできません（BANされています）";
+      document.getElementById("mainContainer").classList.add("locked"); // ロックを維持
+      document.getElementById("customLoginBtn").style.display = "block"; // ボタンは表示したまま
+      document.getElementById("loginNotice").style.display = "block";   // 注意文も表示したまま
+    }
+  });
+};
 
-                               document.getElementById("customLoginBtn").style.display = "none";
-        document.getElementById("loginNotice").style.display = "none";
-      });
-    };
 
     // UIイベント
     document.getElementById('blendRatio').addEventListener('input', function() {
@@ -301,3 +309,4 @@
   </script>
 </body>
 </html>
+
