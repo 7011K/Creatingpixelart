@@ -18,32 +18,46 @@
     #loginNotice { font-size: 0.9em; color: #333; margin-bottom: 1em; }
     #customLoginBtn { padding: 0.5em 1em; font-size: 1em; }
 
+
+    
     .ad-box {
-      position: fixed;
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      padding: 0.5em;
-      font-size: 0.9em;
-      color: #333;
-      z-index: 999;
-      width: 120px;
-      max-height: 240px;
-      overflow: auto;
-    }
-    .ad-box.left { top: 100px; left: 10px; }
-    .ad-box.right { top: 100px; right: 10px; }
-    .ad-box.top { top: 0; left: 0; right: 0; text-align: center; }
-    .ad-box.bottom { bottom: 0; left: 0; right: 0; text-align: center; }
+  display: none;
+  position: fixed;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  z-index: 999;
+  text-align: center;
+}
 
-    @media screen and (max-width: 600px) {
-      .ad-box.left, .ad-box.right { display: none; }
-      .ad-box.top, .ad-box.bottom { display: block; padding: 0.5em; }
-    }
+.ad-box.left, .ad-box.right {
+  width: 120px;
+  height: 600px;
+  overflow: hidden;
+}
 
-    @media screen and (min-width: 601px) {
-      .ad-box.top, .ad-box.bottom { display: none; }
-      .ad-box.left, .ad-box.right { display: block; }
-    }
+.ad-box.left { top: 100px; left: 10px; }
+.ad-box.right { top: 100px; right: 10px; }
+
+.ad-box.top, .ad-box.bottom {
+  width: 100%;
+  height: 90px;
+  left: 0;
+  right: 0;
+}
+
+.ad-box.top { top: 0; }
+.ad-box.bottom { bottom: 0; }
+
+@media screen and (max-width: 600px) {
+  .ad-box.left, .ad-box.right { display: none; }
+  .ad-box.top, .ad-box.bottom { display: block; }
+}
+
+@media screen and (min-width: 601px) {
+  .ad-box.top, .ad-box.bottom { display: none; }
+  .ad-box.left, .ad-box.right { display: block; }
+}
   </style>
 
   <!-- LinkSwitch スクリプト（バリューコマース） -->
@@ -124,6 +138,23 @@
     import { setupGoogleLogin, userEmail } from './auth.js';
     import { blendColors, getImageDataFromImg, generatePixelArt } from './pixelart.js';
 
+　　async function loadAdsFromFile() {
+ 　　 const response = await fetch('ads.txt');
+  　　const text = await response.text();
+  　　const lines = text.trim().split('\n');
+
+  　　lines.forEach(line => {
+    　const [position, url, img, alt] = line.split('|');
+    　const html = `<a href="${url}" target="_blank" rel="noopener noreferrer">
+                    <img src="${img}" alt="${alt}" style="max-width:100%; height:auto;">
+                  　</a>`;
+    const adElement = document.getElementById(`${position}Ad`);
+    if (adElement) adElement.innerHTML = html;
+  });
+}
+
+    
+
     // LinkSwitch対応：通常リンクを表示
     const adList = [
       { title: "🎨 Yahoo!ショッピング", url: "https://shopping.yahoo.co.jp/" },
@@ -143,6 +174,7 @@
 
     // Googleスクリプト読み込み完了を待ってボタンを有効化
     window.onload = () => {
+      loadAdsFromFile();
       const waitForGoogle = setInterval(() => {
         if (window.google && window.google.accounts) {
           clearInterval(waitForGoogle);
@@ -152,7 +184,7 @@
     };
 
     // Google認証（BAN判定含む）
-   document.getElementById("customLoginBtn").onclick = () => {
+document.getElementById("customLoginBtn").onclick = () => {
   setupGoogleLogin((email) => {
     if (email) {
       // ログイン成功時の処理
@@ -160,12 +192,22 @@
       document.getElementById("mainContainer").classList.remove("locked");
       document.getElementById("customLoginBtn").style.display = "none";
       document.getElementById("loginNotice").style.display = "none";
+
+      // 広告を表示
+      document.querySelectorAll(".ad-box").forEach(ad => {
+        ad.style.display = "block";
+      });
     } else {
       // ログイン失敗（BANされている）時の処理
       document.getElementById("loginStatus").textContent = "ログインできません（BANされています）";
-      document.getElementById("mainContainer").classList.add("locked"); // ロックを維持
-      document.getElementById("customLoginBtn").style.display = "block"; // ボタンは表示したまま
-      document.getElementById("loginNotice").style.display = "block";   // 注意文も表示したまま
+      document.getElementById("mainContainer").classList.add("locked");
+      document.getElementById("customLoginBtn").style.display = "block";
+      document.getElementById("loginNotice").style.display = "block";
+
+      // 広告は非表示のまま
+      document.querySelectorAll(".ad-box").forEach(ad => {
+        ad.style.display = "none";
+      });
     }
   });
 };
@@ -309,4 +351,5 @@
   </script>
 </body>
 </html>
+
 
