@@ -1,7 +1,14 @@
- // auth.js
-
-const GOOGLE_CLIENT_ID = "341073342979-gfrpfpg3ag766tadn9rjnckrn7gd28sp.apps.googleusercontent.com";
+ const GOOGLE_CLIENT_ID = "341073342979-gfrpfpg3ag766tadn9rjnckrn7gd28sp.apps.googleusercontent.com";
 export let userEmail = "";
+
+// Base64URL形式を通常のBase64に変換してデコード
+function decodeBase64Url(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) {
+    str += '=';
+  }
+  return atob(str);
+}
 
 // Googleログインを初期化（必要ならスクリプトを読み込む）
 export function setupGoogleLogin(onLoginOK) {
@@ -46,7 +53,7 @@ function initLogin(onLoginOK) {
     callback: async (response) => {
       try {
         const token = response.credential;
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payload = JSON.parse(decodeBase64Url(token.split('.')[1]));
         const rawEmail = payload.email ? payload.email.toLowerCase() : '';
 
         // BANチェックを実行
@@ -66,4 +73,3 @@ function initLogin(onLoginOK) {
   // 純正ボタンは使わず、直接ログインを開始
   google.accounts.id.prompt();
 }
-
