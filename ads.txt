@@ -1,0 +1,4 @@
+left|https://shopping.yahoo.co.jp/|https://yourcdn.com/yahoo-vertical.jpg|Yahoo!ショッピング
+right|https://books.rakuten.co.jp/|https://yourcdn.com/rakuten-vertical.jpg|楽天ブックス
+top|https://www.amazon.co.jp/|https://yourcdn.com/amazon-horizontal.jpg|Amazonトップ
+bottom|https://affiliate.example.com/|https://yourcdn.com/affiliate-horizontal.jpg|おすすめ商品
