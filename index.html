@@ -50,13 +50,25 @@
 .ad-box.bottom { bottom: 0; }
 
 @media screen and (max-width: 600px) {
-  .ad-box.left, .ad-box.right { display: none; }
-  .ad-box.top, .ad-box.bottom { display: block; }
+  .ad-box.show-ads.left,
+  .ad-box.show-ads.right {
+    display: none;
+  }
+  .ad-box.show-ads.top,
+  .ad-box.show-ads.bottom {
+    display: block;
+  }
 }
 
 @media screen and (min-width: 601px) {
-  .ad-box.top, .ad-box.bottom { display: none; }
-  .ad-box.left, .ad-box.right { display: block; }
+  .ad-box.show-ads.top,
+  .ad-box.show-ads.bottom {
+    display: none;
+  }
+  .ad-box.show-ads.left,
+  .ad-box.show-ads.right {
+    display: block;
+  }
 }
   </style>
 
@@ -139,19 +151,39 @@
     import { blendColors, getImageDataFromImg, generatePixelArt } from './pixelart.js';
 
 　　async function loadAdsFromFile() {
- 　　 const response = await fetch('ads.txt');
-  　　const text = await response.text();
-  　　const lines = text.trim().split('\n');
+  const response = await fetch('ads.txt');
+  const text = await response.text();
+  const lines = text.trim().split('\n');
 
-  　　lines.forEach(line => {
-    　const [position, url, img, alt] = line.split('|');
-    　const html = `<a href="${url}" target="_blank" rel="noopener noreferrer">
-                    <img src="${img}" alt="${alt}" style="max-width:100%; height:auto;">
-                  　</a>`;
-    const adElement = document.getElementById(`${position}Ad`);
-    if (adElement) adElement.innerHTML = html;
+  // 広告位置ごとにグループ化
+  const adGroups = {
+    left: [],
+    right: [],
+    top: [],
+    bottom: []
+  };
+
+  lines.forEach(line => {
+    const [position, url, img, alt] = line.split('|');
+    if (adGroups[position]) {
+      adGroups[position].push({ url, img, alt });
+    }
+  });
+
+  // 各位置にランダムな広告を1つ表示
+  Object.keys(adGroups).forEach(position => {
+    const ads = adGroups[position];
+    if (ads.length > 0) {
+      const randomAd = ads[Math.floor(Math.random() * ads.length)];
+      const html = `<a href="${randomAd.url}" target="_blank" rel="noopener noreferrer">
+                      <img src="${randomAd.img}" alt="${randomAd.alt}" style="max-width:100%; height:auto;">
+                    </a>`;
+      const adElement = document.getElementById(`${position}Ad`);
+      if (adElement) adElement.innerHTML = html;
+    }
   });
 }
+
 
     // Googleスクリプト読み込み完了を待ってボタンを有効化
     window.onload = () => {
@@ -172,11 +204,12 @@ document.getElementById("customLoginBtn").onclick = () => {
       document.getElementById("mainContainer").classList.remove("locked");
       document.getElementById("customLoginBtn").style.display = "none";
       document.getElementById("loginNotice").style.display = "none";
-
+      loadAdsFromFile();
       // 広告を表示
+
+   
       document.querySelectorAll(".ad-box").forEach(ad => {
-       　loadAdsFromFile();
-       // ad.style.display = "block";
+      ad.classList.add("show-ads");
         
       });
     } else {
@@ -186,10 +219,7 @@ document.getElementById("customLoginBtn").onclick = () => {
       document.getElementById("customLoginBtn").style.display = "block";
       document.getElementById("loginNotice").style.display = "block";
 
-      // 広告は非表示のまま
-      document.querySelectorAll(".ad-box").forEach(ad => {
-      //  ad.style.display = "none";
-      });
+      
     }
   });
 };
@@ -333,6 +363,7 @@ document.getElementById("customLoginBtn").onclick = () => {
   </script>
 </body>
 </html>
+
 
 
 
