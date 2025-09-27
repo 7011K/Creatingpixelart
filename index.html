@@ -5,7 +5,15 @@
   <title>ピクセルアート作成ツール</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-  body { font-family: sans-serif; margin: 2em; }
+  body { font-family: sans-serif; 
+        margin: 2em; 
+       background: linear-gradient(to bottom right, #e0f7fa, #fce4ec);
+       background-image: url('your-background.gif'); /* ← GIFのパスを指定 */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+       }
 
   .container {
     max-width: 700px;
@@ -53,6 +61,12 @@
   .ad-box.bottom { bottom: 0; }
 
   @media screen and (max-width: 600px) {
+    body {
+    background-image: url('your-background-mobile.gif'); /* 軽量版GIFなど */
+    background-size: cover;
+    background-position: center;
+      }
+    
     .ad-box.show-ads.left,
     .ad-box.show-ads.right {
       display: none;
@@ -381,6 +395,7 @@ document.getElementById("customLoginBtn").onclick = () => {
   </script>
 </body>
 </html>
+
 
 
 
