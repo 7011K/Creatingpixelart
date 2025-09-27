@@ -1,4 +1,4 @@
- const GOOGLE_CLIENT_ID = "341073342979-gfrpfpg3ag766tadn9rjnckrn7gd28sp.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "341073342979-gfrpfpg3ag766tadn9rjnckrn7gd28sp.apps.googleusercontent.com";
 export let userEmail = "";
 
 // Base64URL形式を通常のBase64に変換してデコード
@@ -59,8 +59,13 @@ function initLogin(onLoginOK) {
         // BANチェックを実行
         await checkBanStatus(rawEmail);
 
-        // BANされていなければコールバック実行
-        if (typeof onLoginOK === "function") onLoginOK(userEmail);
+        // BANされていなければコールバック実行、されていれば拒否
+        if (userEmail) {
+          if (typeof onLoginOK === "function") onLoginOK(userEmail);
+        } else {
+          console.warn("BANされているためログイン不可");
+          if (typeof onLoginOK === "function") onLoginOK("");
+        }
       } catch (err) {
         console.error("ログイン処理失敗:", err);
         userEmail = "";
