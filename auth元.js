@@ -1,8 +1,11 @@
 // auth.js
 
+// auth.js
+
 const GOOGLE_CLIENT_ID = "341073342979-gfrpfpg3ag766tadn9rjnckrn7gd28sp.apps.googleusercontent.com";
 export let userEmail = "";
 
+// Googleログインを初期化
 export function setupGoogleLogin(onLoginOK) {
   if (!window.google || !window.google.accounts) {
     const script = document.createElement('script');
@@ -16,19 +19,56 @@ export function setupGoogleLogin(onLoginOK) {
   }
 }
 
+// BANチェックAPIにPOSTして結果を取得
+async function checkBanStatus(email) {
+  try {
+    const response = await fetch("https://bancheckapicreatingpixelart.vercel.app/api/Creatingpixelartbancheckapi", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const result = await response.json();
+    console.log("BANチェック結果:", result);
+
+    // BANされていなければメールアドレスを保持、されていれば空にする
+    userEmail = result.email || "";
+  } catch (error) {
+    console.error("BANチェック失敗:", error);
+    userEmail = ""; // 念のため空にしておく
+  }
+}
+
+// Googleログインのボタンとコールバック設定
 function initLogin(onLoginOK) {
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
-    callback: (response) => {
-      const token = response.credential;
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userEmail = payload.email ? payload.email.toLowerCase() : '';
-      if (typeof onLoginOK === "function") onLoginOK(userEmail);
-    },auto_select: false  // ← ここを追加
+    callback: async (response) => {
+      try {
+        const token = response.credential;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const rawEmail = payload.email ? payload.email.toLowerCase() : '';
+
+        // BANチェックを実行
+        await checkBanStatus(rawEmail);
+
+        // BANされていなければコールバック実行
+        if (typeof onLoginOK === "function") onLoginOK(userEmail);
+      } catch (err) {
+        console.error("ログイン処理失敗:", err);
+        userEmail = "";
+        if (typeof onLoginOK === "function") onLoginOK("");
+      }
+    },
+    auto_select: false
   });
+
   google.accounts.id.renderButton(
     document.getElementById("googleSignInBtn"),
     { theme: "outline", size: "large" }
   );
 }
+
 
