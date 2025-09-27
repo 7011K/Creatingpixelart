@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>ピクセルアート作成ツール</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: sans-serif; margin: 2em; }
     .container { max-width: 700px; margin: auto; }
@@ -16,129 +17,188 @@
     #loginStatus { color: #d32f2f; margin-bottom: 1em; }
     #loginNotice { font-size: 0.9em; color: #333; margin-bottom: 1em; }
     #customLoginBtn { padding: 0.5em 1em; font-size: 1em; }
+
+    .ad-box {
+      position: fixed;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      font-size: 0.9em;
+      color: #333;
+      z-index: 999;
+      width: 120px;
+      max-height: 240px;
+      overflow: auto;
+    }
+    .ad-box.left { top: 100px; left: 10px; }
+    .ad-box.right { top: 100px; right: 10px; }
+    .ad-box.top { top: 0; left: 0; right: 0; text-align: center; }
+    .ad-box.bottom { bottom: 0; left: 0; right: 0; text-align: center; }
+
+    @media screen and (max-width: 600px) {
+      .ad-box.left, .ad-box.right { display: none; }
+      .ad-box.top, .ad-box.bottom { display: block; padding: 0.5em; }
+    }
+
+    @media screen and (min-width: 601px) {
+      .ad-box.top, .ad-box.bottom { display: none; }
+      .ad-box.left, .ad-box.right { display: block; }
+    }
   </style>
+
+  <!-- LinkSwitch スクリプト（バリューコマース） -->
+  <script type="text/javascript">
+    var vc_pid = "3754584";  // ← あなたのバリューコマースIDに差し替えてね！
+  </script>
+  <script type="text/javascript" src="//aml.valuecommerce.com/vcdal.js" async></script>
+
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-<div id="loginNotice">
-  本サービスでは、Google APIを通じて取得したメールアドレスを、セキュリティおよび不正利用防止のため内部の禁止リストと照合します。<br>
-  この照合はサービス利用可否の判断のみに使用され、他の目的には利用しません。<br>
-  取得した情報は安全に保管し、第三者に提供することはありません。<br>
-  ユーザーはいつでも情報の削除を依頼できます。<br>
-  本サイトには運営費用補助のため広告が表示される場合がありますが、取得した情報は広告配信には利用されません。
-</div>
-<div id="loginStatus">Googleログインしてください</div>
-<button id="customLoginBtn" disabled>Googleでログイン</button>
+  <!-- 広告エリア -->
+  <div id="leftAd" class="ad-box left"></div>
+  <div id="rightAd" class="ad-box right"></div>
+  <div id="topAd" class="ad-box top"></div>
+  <div id="bottomAd" class="ad-box bottom"></div>
 
-<div class="container locked" id="mainContainer">
-  <h1>ピクセルアート作成ツール</h1>
-  <div class="button-row">
-    <button id="infoBtn">説明を表示</button>
-    <button id="termsBtn">利用規約</button>
+  <div id="loginNotice">
+    本サービスでは、Google APIを通じて取得したメールアドレスを、セキュリティおよび不正利用防止のため内部の禁止リストと照合します。<br>
+    この照合はサービス利用可否の判断のみに使用され、他の目的には利用しません。<br>
+    取得した情報は安全に保管し、第三者に提供することはありません。<br>
+    ユーザーはいつでも情報の削除を依頼できます。<br>
+    本サイトには運営費用補助のため広告が表示される場合がありますが、取得した情報は広告配信には利用されません。
   </div>
+  <div id="loginStatus">Googleログインしてください</div>
+  <button id="customLoginBtn" disabled>Googleでログイン</button>
 
-  <label>ブレンド率 (0.0～1.0):</label><br>
-  <input id="blendRatio" type="range" min="0" max="1" step="0.01" value="0.5" style="width:300px;">
-  <span id="blendRatioVal">0.5</span>
-  <br><br>
+  <div class="container locked" id="mainContainer">
+    <h1>ピクセルアート作成ツール</h1>
+    <div class="button-row">
+      <button id="infoBtn">説明を表示</button>
+      <button id="termsBtn">利用規約</button>
+    </div>
 
-  <label>
-    <input id="mixBackground" type="checkbox">
-    背景（RGBA=(0, 0, 0, 0)）をミックス対象にする
-  </label><br>
-  <label>
-    <input id="useFolder" type="checkbox">
-    素材画像をフォルダ内画像全て対象にする
-  </label><br><br>
+    <label>ブレンド率 (0.0～1.0):</label><br>
+    <input id="blendRatio" type="range" min="0" max="1" step="0.01" value="0.5" style="width:300px;">
+    <span id="blendRatioVal">0.5</span>
+    <br><br>
 
-  <label>元画像を選択（最大500×500）: 
-    <input id="baseImage" type="file" accept="image/*">
-  </label>
-  <div class="file-list" id="baseFileName"></div>
-  <div id="materialInput">
-    <label>素材画像を選択（最大50×50）: 
-      <input id="materialImage" type="file" accept="image/*">
+    <label>
+      <input id="mixBackground" type="checkbox">
+      背景（RGBA=(0, 0, 0, 0)）をミックス対象にする
+    </label><br>
+    <label>
+      <input id="useFolder" type="checkbox">
+      素材画像をフォルダ内画像全て対象にする
+    </label><br><br>
+
+    <label>元画像を選択（最大500×500）: 
+      <input id="baseImage" type="file" accept="image/*">
     </label>
-    <div class="file-list" id="materialFileName"></div>
-  </div>
-  <div id="materialFolderInput" style="display:none;">
-    <label>素材画像フォルダを選択: 
-      <input id="materialFolder" type="file" accept="image/*" multiple>
-    </label>
-    <div class="file-list" id="materialFolderFileNames"></div>
-  </div>
-  <br>
+    <div class="file-list" id="baseFileName"></div>
+    <div id="materialInput">
+      <label>素材画像を選択（最大50×50）: 
+        <input id="materialImage" type="file" accept="image/*">
+      </label>
+      <div class="file-list" id="materialFileName"></div>
+    </div>
+    <div id="materialFolderInput" style="display:none;">
+      <label>素材画像フォルダを選択: 
+        <input id="materialFolder" type="file" accept="image/*" multiple>
+      </label>
+      <div class="file-list" id="materialFolderFileNames"></div>
+    </div>
+    <br>
 
-  <button id="generateBtn">ピクセルアートを生成</button><br>
-  <div class="progress" id="progressBar" style="display:none;"><div class="bar" id="progressBarBar"></div></div>
-  <a id="downloadLink" style="display:none;" download="output_image.png">画像をダウンロード</a>
-  <br>
-  <div class="preview-area">
-    <h3>プレビュー</h3>
-    <img id="previewImage" alt="プレビュー画像" style="display:none;">
+    <button id="generateBtn">ピクセルアートを生成</button><br>
+    <div class="progress" id="progressBar" style="display:none;"><div class="bar" id="progressBarBar"></div></div>
+    <a id="downloadLink" style="display:none;" download="output_image.png">画像をダウンロード</a>
+    <br>
+    <div class="preview-area">
+      <h3>プレビュー</h3>
+      <img id="previewImage" alt="プレビュー画像" style="display:none;">
+    </div>
   </div>
-</div>
 
-<script type="module">
-import { setupGoogleLogin, userEmail } from './auth.js';
-import { blendColors, getImageDataFromImg, generatePixelArt } from './pixelart.js';
+  <script type="module">
+    import { setupGoogleLogin, userEmail } from './auth.js';
+    import { blendColors, getImageDataFromImg, generatePixelArt } from './pixelart.js';
 
-// Googleスクリプト読み込み完了を待ってボタンを有効化
-window.onload = () => {
-  const waitForGoogle = setInterval(() => {
-    if (window.google && window.google.accounts) {
-      clearInterval(waitForGoogle);
-      document.getElementById("customLoginBtn").disabled = false;
+    // LinkSwitch対応：通常リンクを表示
+    const adList = [
+      { title: "🎨 Yahoo!ショッピング", url: "https://shopping.yahoo.co.jp/" },
+      { title: "📚 楽天ブックス", url: "https://books.rakuten.co.jp/" },
+      { title: "🧩 Amazonトップ", url: "https://www.amazon.co.jp/" }
+    ];
+
+    function pickRandomAd() {
+      const ad = adList[Math.floor(Math.random() * adList.length)];
+      return `<a href="${ad.url}" target="_blank" rel="noopener noreferrer">${ad.title}</a>`;
     }
-  }, 100);
-};
 
-// Google認証（BAN判定含む）
-document.getElementById("customLoginBtn").onclick = () => {
-  setupGoogleLogin((email) => {
-    document.getElementById("loginStatus").textContent = "ログイン済み: " + email;
-    document.getElementById("mainContainer").classList.remove("locked");
-    document.getElementById("customLoginBtn").style.display = "none";
-    document.getElementById("loginNotice").style.display = "none";
-  });
-};
+    document.getElementById("leftAd").innerHTML = pickRandomAd();
+    document.getElementById("rightAd").innerHTML = pickRandomAd();
+    document.getElementById("topAd").innerHTML = pickRandomAd();
+    document.getElementById("bottomAd").innerHTML = pickRandomAd();
 
-// UIイベント
-document.getElementById('blendRatio').addEventListener('input', function() {
-  document.getElementById('blendRatioVal').textContent = this.value;
-});
-document.getElementById('useFolder').addEventListener('change', function() {
-  const useFolder = document.getElementById('useFolder').checked;
-  document.getElementById('materialInput').style.display = useFolder ? 'none' : '';
-  document.getElementById('materialFolderInput').style.display = useFolder ? '' : 'none';
-});
-document.getElementById('baseImage').addEventListener('change', () => showFileName('baseImage', 'baseFileName'));
-document.getElementById('materialImage').addEventListener('change', () => showFileName('materialImage', 'materialFileName'));
-document.getElementById('materialFolder').addEventListener('change', () => showFileName('materialFolder', 'materialFolderFileNames'));
-document.getElementById('infoBtn').onclick = showInformation;
-document.getElementById('termsBtn').onclick = showTerms;
+    // Googleスクリプト読み込み完了を待ってボタンを有効化
+    window.onload = () => {
+      const waitForGoogle = setInterval(() => {
+        if (window.google && window.google.accounts) {
+          clearInterval(waitForGoogle);
+          document.getElementById("customLoginBtn").disabled = false;
+        }
+      }, 100);
+    };
 
-function showFileName(inputId, labelId) {
-  const input = document.getElementById(inputId);
-  const label = document.getElementById(labelId);
-  if (input.files.length === 0) {
-    label.textContent = '';
-  } else if (input.files.length === 1) {
-    label.textContent = `選択ファイル: ${input.files[0].name}`;
-  } else {
-    label.textContent = `選択ファイル数: ${input.files.length}`;
-    let names = '';
-    for (let i = 0; i < input.files.length; i++) {
-      names += input.files[i].name + ', ';
+    // Google認証（BAN判定含む）
+    document.getElementById("customLoginBtn").onclick = () => {
+      setupGoogleLogin((email) => {
+        document.getElementById("loginStatus").textContent = "ログイン済み: " + email;
+        document.getElementById("mainContainer").classList.remove("locked");
+        document.get
+
+                               document.getElementById("customLoginBtn").style.display = "none";
+        document.getElementById("loginNotice").style.display = "none";
+      });
+    };
+
+    // UIイベント
+    document.getElementById('blendRatio').addEventListener('input', function() {
+      document.getElementById('blendRatioVal').textContent = this.value;
+    });
+    document.getElementById('useFolder').addEventListener('change', function() {
+      const useFolder = document.getElementById('useFolder').checked;
+      document.getElementById('materialInput').style.display = useFolder ? 'none' : '';
+      document.getElementById('materialFolderInput').style.display = useFolder ? '' : 'none';
+    });
+    document.getElementById('baseImage').addEventListener('change', () => showFileName('baseImage', 'baseFileName'));
+    document.getElementById('materialImage').addEventListener('change', () => showFileName('materialImage', 'materialFileName'));
+    document.getElementById('materialFolder').addEventListener('change', () => showFileName('materialFolder', 'materialFolderFileNames'));
+    document.getElementById('infoBtn').onclick = showInformation;
+    document.getElementById('termsBtn').onclick = showTerms;
+
+    function showFileName(inputId, labelId) {
+      const input = document.getElementById(inputId);
+      const label = document.getElementById(labelId);
+      if (input.files.length === 0) {
+        label.textContent = '';
+      } else if (input.files.length === 1) {
+        label.textContent = `選択ファイル: ${input.files[0].name}`;
+      } else {
+        label.textContent = `選択ファイル数: ${input.files.length}`;
+        let names = '';
+        for (let i = 0; i < input.files.length; i++) {
+          names += input.files[i].name + ', ';
+        }
+        label.textContent += ' (' + names.slice(0,-2) + ')';
+      }
     }
-    label.textContent += ' (' + names.slice(0,-2) + ')';
-  }
-}
 
-function showInformation() {
-  alert(
-    `📌 ピクセルアート作成ツールについて
-    
+    function showInformation() {
+      alert(
+        `📌 ピクセルアート作成ツールについて
+
 本アプリは選択した元画像の色を解析し素材画像を変更して並べることでピクセルアートを作成するものです
 
 ・元画像は最大500×500、素材画像は最大50×50ピクセルまでです
@@ -148,13 +208,13 @@ function showInformation() {
 
 生成後、「画像をダウンロード」リンクから保存できます。
 生成画像は下部にプレビュー表示されます（大きい画像は縮小表示されます）。`
-  );
-}
+      );
+    }
 
-function showTerms() {
-  alert(
-    `📜利用規約
-    
+    function showTerms() {
+      alert(
+        `📜利用規約
+
 これらが守られていない場合製作者による利用停止措置を行いますのでご注意下さい
 
 ・コードの解析やアプリを使った有料コンテンツの作成は禁止です
@@ -162,85 +222,82 @@ function showTerms() {
 ・生成された画像の販売は禁止です
 ・生成された画像はSNSでの公開、アイコンでの使用のみ許可します　
 　※画像公開の際は本アプリのURLを乗せてください
-・生成された画像に関してのトラブルには一切かかわりませんのでご注意ください
-`
-  );
-}
+・生成された画像に関してのトラブルには一切かかわりませんのでご注意ください`
+      );
+    }
 
-function loadImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
+    function loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+      });
+    }
 
-function showPreview(canvas) {
-  const preview = document.getElementById('previewImage');
-  const maxW = 800, maxH = 800;
-  let scale = Math.min(maxW / canvas.width, maxH / canvas.height, 1);
-  let previewW = Math.floor(canvas.width * scale), previewH = Math.floor(canvas.height * scale);
-  const thumbCanvas = document.createElement('canvas');
-  thumbCanvas.width = previewW;
-  thumbCanvas.height = previewH;
-  const ctx = thumbCanvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(canvas, 0, 0, previewW, previewH);
-  preview.src = thumbCanvas.toDataURL('image/png');
-  preview.style.display = '';
-}
+    function showPreview(canvas) {
+      const preview = document.getElementById('previewImage');
+      const maxW = 800, maxH = 800;
+      let scale = Math.min(maxW / canvas.width, maxH / canvas.height, 1);
+      let previewW = Math.floor(canvas.width * scale), previewH = Math.floor(canvas.height * scale);
+      const thumbCanvas = document.createElement('canvas');
+      thumbCanvas.width = previewW;
+      thumbCanvas.height = previewH;
+      const ctx = thumbCanvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(canvas, 0, 0, previewW, previewH);
+      preview.src = thumbCanvas.toDataURL('image/png');
+      preview.style.display = '';
+    }
 
-document.getElementById('generateBtn').onclick = async function () {
-  const blendRatio = parseFloat(document.getElementById('blendRatio').value);
-  const mixBackground = document.getElementById('mixBackground').checked;
-  const useFolder = document.getElementById('useFolder').checked;
-  const baseFile = document.getElementById('baseImage').files[0];
-  if (!baseFile) return alert('元画像が選択されていません');
+    document.getElementById('generateBtn').onclick = async function () {
+      const blendRatio = parseFloat(document.getElementById('blendRatio').value);
+      const mixBackground = document.getElementById('mixBackground').checked;
+      const useFolder = document.getElementById('useFolder').checked;
+      const baseFile = document.getElementById('baseImage').files[0];
+      if (!baseFile) return alert('元画像が選択されていません');
 
-  let materialFiles = [];
-  if (useFolder) {
-    materialFiles = Array.from(document.getElementById('materialFolder').files);
-    if (materialFiles.length === 0) return alert('素材画像フォルダが選択されていません');
-  } else {
-    const materialFile = document.getElementById('materialImage').files[0];
-    if (!materialFile) return alert('素材画像が選択されていません');
-    materialFiles = [materialFile];
-  }
+      let materialFiles = [];
+      if (useFolder) {
+        materialFiles = Array.from(document.getElementById('materialFolder').files);
+        if (materialFiles.length === 0) return alert('素材画像フォルダが選択されていません');
+      } else {
+        const materialFile = document.getElementById('materialImage').files[0];
+        if (!materialFile) return alert('素材画像が選択されていません');
+        materialFiles = [materialFile];
+      }
 
-  let baseImg, materialImgs;
-  try {
-    baseImg = await loadImage(baseFile);
-    materialImgs = await Promise.all(materialFiles.map(loadImage));
-  } catch (e) {
-    return alert('画像の読み込みに失敗しました');
-  }
+      let baseImg, materialImgs;
+      try {
+        baseImg = await loadImage(baseFile);
+        materialImgs = await Promise.all(materialFiles.map(loadImage));
+      } catch (e) {
+        return alert('画像の読み込みに失敗しました');
+      }
 
-  const progressBar = document.getElementById('progressBar');
-  const progressBarBar = document.getElementById('progressBarBar');
-  progressBar.style.display = '';
-  progressBarBar.style.width = '0%';
+      const progressBar = document.getElementById('progressBar');
+      const progressBarBar = document.getElementById('progressBarBar');
+      progressBar.style.display = '';
+      progressBarBar.style.width = '0%';
 
-  try {
-    const outputCanvas = await generatePixelArt(
-      baseImg, materialImgs, blendRatio, mixBackground,
-      (percent) => { progressBarBar.style.width = percent + '%'; },
-      userEmail
-    );
-    progressBar.style.display = 'none';
-    const url = outputCanvas.toDataURL('image/png');
-    const link = document.getElementById('downloadLink');
-    link.href = url;
-    link.style.display = '';
-    showPreview(outputCanvas);
-    alert('ピクセルアート画像が生成されました！画像をダウンロードできます。');
-  } catch (e) {
-    progressBar.style.display = 'none';
-    alert(e.message || '生成中にエラーが発生しました');
-    // BANの場合、"このメールアドレスは利用できません（BANリスト一致）"
-    // 未ログインの場合、"Googleログインしてメールアドレスを取得してください"
-  }
-};
-</script>
+      try {
+        const outputCanvas = await generatePixelArt(
+          baseImg, materialImgs, blendRatio, mixBackground,
+          (percent) => { progressBarBar.style.width = percent + '%'; },
+          userEmail
+        );
+        progressBar.style.display = 'none';
+        const url = outputCanvas.toDataURL('image/png');
+        const link = document.getElementById('downloadLink');
+        link.href = url;
+        link.style.display = '';
+        showPreview(outputCanvas);
+        alert('ピクセルアート画像が生成されました！画像をダウンロードできます。');
+      } catch (e) {
+        progressBar.style.display = 'none';
+        alert(e.message || '生成中にエラーが発生しました');
+      }
+    };
+  </script>
 </body>
 </html>
