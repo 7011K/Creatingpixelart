@@ -153,28 +153,8 @@
   });
 }
 
-    
-
-    // LinkSwitch対応：通常リンクを表示
-    const adList = [
-      { title: "🎨 Yahoo!ショッピング", url: "https://shopping.yahoo.co.jp/" },
-      { title: "📚 楽天ブックス", url: "https://books.rakuten.co.jp/" },
-      { title: "🧩 Amazonトップ", url: "https://www.amazon.co.jp/" }
-    ];
-
-    function pickRandomAd() {
-      const ad = adList[Math.floor(Math.random() * adList.length)];
-      return `<a href="${ad.url}" target="_blank" rel="noopener noreferrer">${ad.title}</a>`;
-    }
-
-    document.getElementById("leftAd").innerHTML = pickRandomAd();
-    document.getElementById("rightAd").innerHTML = pickRandomAd();
-    document.getElementById("topAd").innerHTML = pickRandomAd();
-    document.getElementById("bottomAd").innerHTML = pickRandomAd();
-
     // Googleスクリプト読み込み完了を待ってボタンを有効化
     window.onload = () => {
-      loadAdsFromFile();
       const waitForGoogle = setInterval(() => {
         if (window.google && window.google.accounts) {
           clearInterval(waitForGoogle);
@@ -195,7 +175,9 @@ document.getElementById("customLoginBtn").onclick = () => {
 
       // 広告を表示
       document.querySelectorAll(".ad-box").forEach(ad => {
+       　loadAdsFromFile();
         ad.style.display = "block";
+        
       });
     } else {
       // ログイン失敗（BANされている）時の処理
@@ -351,5 +333,6 @@ document.getElementById("customLoginBtn").onclick = () => {
   </script>
 </body>
 </html>
+
 
 
