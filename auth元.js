@@ -1,11 +1,9 @@
 // auth.js
 
-// auth.js
-
 const GOOGLE_CLIENT_ID = "341073342979-gfrpfpg3ag766tadn9rjnckrn7gd28sp.apps.googleusercontent.com";
 export let userEmail = "";
 
-// Googleログインを初期化
+// Googleログインを初期化（必要ならスクリプトを読み込む）
 export function setupGoogleLogin(onLoginOK) {
   if (!window.google || !window.google.accounts) {
     const script = document.createElement('script');
@@ -41,7 +39,7 @@ async function checkBanStatus(email) {
   }
 }
 
-// Googleログインのボタンとコールバック設定
+// Googleログインの初期化とログイン開始
 function initLogin(onLoginOK) {
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
@@ -65,10 +63,6 @@ function initLogin(onLoginOK) {
     auto_select: false
   });
 
-  google.accounts.id.renderButton(
-    document.getElementById("googleSignInBtn"),
-    { theme: "outline", size: "large" }
-  );
+  // 純正ボタンは使わず、直接ログインを開始
+  google.accounts.id.prompt();
 }
-
-
